@@ -7,9 +7,9 @@ info:
   tags: sensitive, disclosure, dependencies, credentials
 
 requests:
-  - method:
-      - GET
-      - POST
+  - method: GET
+    #  - GET
+     # - POST
     path:
       # List of endpoints to check
       - "{{BaseURL}}/package.json"
@@ -21,9 +21,7 @@ requests:
       - "{{BaseURL}}/env.json"
       - "{{BaseURL}}/credentials.json"
       - "{{BaseURL}}/yarn.lock"
-      - "{{BaseURL}}/yarn-error.log"
       - "{{BaseURL}}/npm-debug.log"
-      - "{{BaseURL}}/yarn-debug.log"
       - "{{BaseURL}}/composer.json"
       - "{{BaseURL}}/bower.json"
       - "{{BaseURL}}/appsettings.json"
@@ -33,12 +31,7 @@ requests:
       - "{{BaseURL}}/.env"
       - "{{BaseURL}}/.git"
       - "{{BaseURL}}/.1pux"
-      - "{{BaseURL}}/app/config/config.local.neon"
-      - "{{BaseURL}}/buildPasswordreset.xml"
-      - "{{BaseURL}}/api/datasource"
-      - "{{BaseURL}}/_vti_pvt/service.pwd"
       - "{{BaseURL}}/ramp_core.js"
-      - "{{BaseURL}}/password_control"
       - "{{BaseURL}}/Pagos.tar.gz"
     matchers:
       - type: status
@@ -53,6 +46,33 @@ requests:
           - "Unauthorized"      # Unauthorized access message
           - "Forbidden"         # Forbidden access message
           - "Internal Server Error"  # Server error
+        part: header
+      - type: word
+        words:
+          - '"dependencies":'       # Indicates a dependency list in package.json
+          - '"devDependencies":'    # Development dependencies
+          - '"scripts":'            # Sensitive npm scripts
+          - '"webpackChunkName":'   # Webpack stats file indicator
+          - '"entrypoints":'        # Webpack entry points
+          - '"AWS_ACCESS_KEY_ID":'  # Potential credentials in config files
+          - '"password":'           # Generic password field in JSON
       - type: regex
         regex:
-          - '.*'  # Matches any content in response to confirm existence
+          # Detect if the response contains typical JSON structure (reduce false positi>
+          - '"name"\s*:\s*".*"'
+          - '"version"\s*:\s*".*"'
+          - '"dependencies"\s*:\s*{'
+          - '.*"aws_access_key_id".*'
+          - '.*"aws_secret_access_key".*'
+          - '.*PRIVATE KEY.*'
+        part: body
+      - type: word
+        words:
+          - "404"
+        part: body
+        negative: true
+      - type: word
+        words:
+          - "404"
+        part: header
+        negative: true
