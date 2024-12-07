@@ -1,0 +1,58 @@
+id: depcon
+
+info:
+  name: Sensitive Endpoints Existence Check
+  author: mjhd0x1
+  severity: high
+  tags: sensitive, disclosure, dependencies, credentials
+
+requests:
+  - method:
+      - GET
+      - POST
+    path:
+      # List of endpoints to check
+      - "{{BaseURL}}/package.json"
+      - "{{BaseURL}}/ui/package.json"
+      - "{{BaseURL}}/package-lock.json"
+      - "{{BaseURL}}/stats.json"
+      - "{{BaseURL}}/webpack-stats.json"
+      - "{{BaseURL}}/config.json"
+      - "{{BaseURL}}/env.json"
+      - "{{BaseURL}}/credentials.json"
+      - "{{BaseURL}}/yarn.lock"
+      - "{{BaseURL}}/yarn-error.log"
+      - "{{BaseURL}}/npm-debug.log"
+      - "{{BaseURL}}/yarn-debug.log"
+      - "{{BaseURL}}/composer.json"
+      - "{{BaseURL}}/bower.json"
+      - "{{BaseURL}}/appsettings.json"
+      - "{{BaseURL}}/serviceAccountCredentials.json"
+      - "{{BaseURL}}/npm-shrinkwrap.json"
+      - "{{BaseURL}}/.npmrc"
+      - "{{BaseURL}}/.env"
+      - "{{BaseURL}}/.git"
+      - "{{BaseURL}}/.1pux"
+      - "{{BaseURL}}/app/config/config.local.neon"
+      - "{{BaseURL}}/buildPasswordreset.xml"
+      - "{{BaseURL}}/api/datasource"
+      - "{{BaseURL}}/_vti_pvt/service.pwd"
+      - "{{BaseURL}}/ramp_core.js"
+      - "{{BaseURL}}/password_control"
+      - "{{BaseURL}}/Pagos.tar.gz"
+    matchers:
+      - type: status
+        status:
+          - 200     # OK
+          - 401     # Unauthorized
+          - 500     # Internal Server Error
+          - 403     # Forbidden
+      - type: word
+        words:
+          - "application/json"  # JSON response indicator
+          - "Unauthorized"      # Unauthorized access message
+          - "Forbidden"         # Forbidden access message
+          - "Internal Server Error"  # Server error
+      - type: regex
+        regex:
+          - '.*'  # Matches any content in response to confirm existence
